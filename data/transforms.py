@@ -1,5 +1,5 @@
 from torchvision import transforms
-
+#applying transformations
 def get_train_transforms():
     return transforms.Compose([
         transforms.Resize((128, 128)),

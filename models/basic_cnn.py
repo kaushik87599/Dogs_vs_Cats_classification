@@ -21,9 +21,7 @@ def basic_cnn():
         Layer(in_channels=32, out_channels=64),
         Layer(in_channels=64, out_channels=128),
         Layer(in_channels=128, out_channels=256),
-        nn.Dropout(p=0.5),
-        nn.Flatten(),
-        nn.Linear(in_features=512, out_features=2)
+        
     )
     return model
         
