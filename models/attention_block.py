@@ -3,7 +3,7 @@ import torch
 
 class AttentionBlock(nn.Module):
     
-    def __init__(self, in_channels, out_channels,ratio = 4):
+    def __init__(self, in_channels=256, out_channels=256,ratio = 4):
         super(AttentionBlock, self).__init__()
         self.ratio = ratio
         self.sequeeze = nn.AdaptiveAvgPool2d(1)
@@ -25,7 +25,8 @@ class AttentionBlock(nn.Module):
         x = original*x.view(x.size(0), x.size(1), 1, 1)
         return x
     
-
+def attention_cnn():
+    return AttentionBlock(256, 256, 4)
 
 
 

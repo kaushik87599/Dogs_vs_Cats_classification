@@ -24,6 +24,3 @@ def basic_cnn():
         
     )
     return model
-        
-  
-    

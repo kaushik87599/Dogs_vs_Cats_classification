@@ -5,3 +5,4 @@ numpy
 kagglehub
 torch
 torchvision
+scikit-learn
