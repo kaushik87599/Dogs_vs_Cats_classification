@@ -20,6 +20,8 @@ from torch.optim.lr_scheduler import StepLR
 
 from utils.metrics_logger import Logger
 from utils.evaluate import evaluate_model
+from visualization import plot_training_metrics
+from visualization import plot_layers
 
 
 def training(model,train_loader,val_loader,num_epochs=20 ):
@@ -64,6 +66,7 @@ def training(model,train_loader,val_loader,num_epochs=20 ):
             best_accuracy = val_acc
             log.log_best_metrics(epoch,train_loss,train_accuracy,val_loss,val_acc)
             torch.save(model.state_dict(), f"outputs/checkpoints/best_{model.__class__.__name__}_model.pth")
+    plot_training_metrics(model.__class__.__name__)
             
 
 
@@ -96,6 +99,8 @@ attention_model,basic_model = get_models()
 
 attention_model = attention_model.to(device)
 basic_model = basic_model.to(device)  
+plot_layers(basic_model)
+plot_layers(attention_model)
 
 
 training(basic_model,train_loader,val_loader)

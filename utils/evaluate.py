@@ -1,6 +1,7 @@
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 import json
+from visualization import plot_confusion_matrix
 
 def evaluate_model(model,test_loader):
     #load best checkpoint of model
@@ -41,5 +42,7 @@ def evaluate_model(model,test_loader):
         json.dump(metrics, f, indent=4)
         
     ##Plot confusion matrix via visualization.py
+    plot_confusion_matrix(cm,model.__class__.__name__)
+    
     return None
      

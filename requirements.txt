@@ -6,3 +6,4 @@ kagglehub
 torch
 torchvision
 scikit-learn
+torchsummary
