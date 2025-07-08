@@ -1,4 +1,4 @@
-    # 3. visualization.py — All Plots & Grad-CAM
+# 3. visualization.py — All Plots & Grad-CAM
     # Generates visuals for both training progress and model interpretability.
 
     # Processes:
@@ -22,6 +22,8 @@ import numpy as np
 import pandas as pd
 from torchsummary import summary
 import torch
+from models.custom_cnn import custom_basic_cnn,custom_attention_cnn
+import cv2
     
 def plot_training_metrics(model_name):
     df = pd.read_csv(f'outputs/logs/{model_name}.csv')
@@ -90,8 +92,76 @@ def plot_confusion_matrix(cm,model_name):
     plt.title(f'Confusion Matrix of Model {model_name}')
     plt.savefig('outputs/plots/confusion_matrix.png')
 
-def Grad_cam():
-    pass
+def get_last_conv_layer(model):
+    # model.base_cnn is nn.Sequential of Layer modules
+    for layer in reversed(model.base_cnn):
+        if hasattr(layer, 'conv') and isinstance(layer.conv, torch.nn.Conv2d):
+            return layer.conv
+    raise ValueError("No Conv2d layer found in model.base_cnn")
+
+def Grad_cam(model, image_tensor, orig_image=None, class_idx=None, save_path='outputs/gradcam/gradcam.png'):
+    if torch.cuda.is_available():
+        image_tensor = image_tensor.to('cuda')
+        model.to('cuda')
+    model.eval()
+    feature_maps = []
+    gradients = []
+
+    def forward_hook(module, input, output):
+        feature_maps.append(output.detach())
+
+    def backward_hook(module, grad_in, grad_out):
+        gradients.append(grad_out[0].detach())
+
+    conv_layer = get_last_conv_layer(model)
+    forward_handle = conv_layer.register_forward_hook(forward_hook)
+    backward_handle = conv_layer.register_full_backward_hook(backward_hook)
+
+    # 1. Forward pass
+    output = model(image_tensor)
+    if class_idx is None:
+        class_idx = output.argmax(dim=1).item()
+    # 2. Zero grads and backward pass for the target class
+    model.zero_grad()
+    target = output[0, class_idx]
+    target.backward()
+
+    # 3. Get activations and gradients
+    activations = feature_maps[0]   # [1, C, H, W]
+    grads = gradients[0]            # [1, C, H, W]
+
+    # 4. Compute weights and Grad-CAM
+    weights = grads.mean(dim=(2, 3), keepdim=True)  # [1, C, 1, 1]
+    grad_cam = (weights * activations).sum(dim=1, keepdim=True)  # [1, 1, H, W]
+    grad_cam = torch.relu(grad_cam)
+    grad_cam = grad_cam.squeeze().cpu().numpy()
+    grad_cam = (grad_cam - grad_cam.min()) / (grad_cam.max() - grad_cam.min() + 1e-8)  # Normalize to [0,1]
+
+    # 5. Overlay heatmap on original image
+    
+    if orig_image is not None:
+        # orig_image: numpy array, shape [H, W, 3], range [0,255] or [0,1]
+        grad_cam_uint8 = np.uint8(255 * grad_cam)
+        grad_cam_uint8 = np.squeeze(grad_cam_uint8)
+        if grad_cam_uint8.ndim != 2:
+            raise ValueError("grad_cam_uint8 must be a 2D array for applyColorMap")
+        heatmap = cv2.applyColorMap(grad_cam_uint8, cv2.COLORMAP_JET)
+        if orig_image.max() <= 1.0:
+            orig_image = (orig_image * 255).astype(np.uint8)
+        overlay = cv2.addWeighted(orig_image, 0.5, heatmap, 0.5, 0)
+        cv2.imwrite(save_path, overlay)
+    else:
+        plt.imsave(save_path, grad_cam, cmap='jet')
+
+    # 6. Remove hooks
+    forward_handle.remove()
+    backward_handle.remove()
+
+    # Clear for next use
+    feature_maps.clear()
+    gradients.clear()
+
+
 
 def plot_layers(model):
     if torch.cuda.is_available():
