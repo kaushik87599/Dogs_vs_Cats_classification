@@ -1,4 +1,7 @@
 from torchvision import transforms
+from PIL import Image
+from utils.metrics_logger import log_in
+import torch
 #applying transformations
 def get_train_transforms():
     return transforms.Compose([
@@ -10,9 +13,11 @@ def get_train_transforms():
         
     ])
 
-def get_val_transforms():
+def get_val_transforms()->transforms.Compose:
     return transforms.Compose([
         transforms.Resize((128, 128)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5]*3, std=[0.5]*3)
     ])
+
+

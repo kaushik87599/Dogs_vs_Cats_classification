@@ -1,11 +1,16 @@
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 import json
-from visualization import plot_confusion_matrix
+from utils.visualization import plot_confusion_matrix
+from utils.metrics_logger import log_in
+from config import device
+from data.dataset import load_test_image
+
 
 def evaluate_model(model,test_loader):
     #load best checkpoint of model
-    load_model = torch.load(f'outputs/checkpoints/best{model.__class__.__name__}_model.pth')
+    log_in('Inside evaluate_model function')
+    load_model = torch.load(f'outputs/checkpoints/best_{model.__class__.__name__}_model.pth')
     model.load_state_dict(load_model)
     model.eval()
     correct = 0
@@ -46,3 +51,17 @@ def evaluate_model(model,test_loader):
     
     return None
      
+def test_image(model,img):
+    log_in('Inside test_image function')
+    model.eval()
+    model.to(device)
+    img_tensor,_ = load_test_image(img)
+    model.eval()
+    # prediction=0
+    with torch.no_grad():
+        output = model(img_tensor)
+        prediction = torch.argmax(output, dim=1)
+        prediction = prediction.item()
+
+    
+    return int(prediction)

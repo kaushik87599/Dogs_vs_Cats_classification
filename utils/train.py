@@ -19,20 +19,22 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 
 from utils.metrics_logger import Logger
+from utils.metrics_logger import log_in
 from utils.evaluate import evaluate_model
-from visualization import plot_training_metrics
-from visualization import plot_layers
+from utils.visualization import plot_training_metrics
+
+from config import device
 
 
 def training(model,train_loader,val_loader,num_epochs=20 ):
-    
+    log_in('Inside training function')
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(),lr=1e-3, weight_decay=1e-4)
     scheduler = StepLR(optimizer, step_size=5, gamma=0.1)
     train_accuracy=0
     val_loss=val_acc=0
     best_accuracy=0
-    global device
+    
     log = Logger(model.__class__.__name__)
     for epoch in range(num_epochs):
         train_loss = 0
@@ -68,9 +70,8 @@ def training(model,train_loader,val_loader,num_epochs=20 ):
             torch.save(model.state_dict(), f"outputs/checkpoints/best_{model.__class__.__name__}_model.pth")
     plot_training_metrics(model.__class__.__name__)
             
-
-
 def val(model, val_loader, criterion):
+    log_in('Inside Validation function')
     model.eval()
     val_loss, val_correct = 0, 0
 
@@ -90,26 +91,3 @@ def val(model, val_loader, criterion):
     return  val_accuracy,val_loss
 
 
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-train_loader, val_loader,test_loader = get_dataloaders(train_dir='data/processed/train', val_dir='data/processed/val')
-
-attention_model,basic_model = get_models()
-
-attention_model = attention_model.to(device)
-basic_model = basic_model.to(device)  
-plot_layers(basic_model)
-plot_layers(attention_model)
-
-
-training(basic_model,train_loader,val_loader)
-training(attention_model,train_loader,val_loader)
-
-####Call visualization.py to optionally update live plots
-
-
-
-
-
-  

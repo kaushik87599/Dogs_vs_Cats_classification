@@ -15,7 +15,10 @@ class Layer(nn.Module):
         return x
 
 def basic_cnn():
-    ''' Basic CNN with 4 convolutional layers, max-pooling, dropout(0.5), flatten and linear (in=512,out=2). '''
+    ''' Basic CNN with 4 Layers of convolutional layers,BatchNorm, ReLU, max-pooling.
+    \n\tINPUT: 3x128x128
+    \n\tOUTPUT: 256x8x8
+    '''
     model = nn.Sequential(
         Layer(in_channels=3, out_channels=32),
         Layer(in_channels=32, out_channels=64),

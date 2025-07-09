@@ -8,3 +8,5 @@ torchvision
 scikit-learn
 torchsummary
 opencv-python
+streamlit
+PIL
