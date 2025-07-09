@@ -32,11 +32,11 @@ if __name__=="__main__":
     attention_model = attention_model.to(device)
     
     log_in('Basic Model started training')
-    training(base_model,train_loader,val_loader,num_epochs=epcohs)
+    training(base_model,train_loader,val_loader,num_epochs=epochs)
     log_in('Basic Model finished training')
     
     log_in('Attention Model started training')
-    training(attention_model,train_loader,val_loader,num_epochs=epcohs)
+    training(attention_model,train_loader,val_loader,num_epochs=epochs)
     log_in('Attention Model finished training')
     
     evaluate_model(base_model,test_loader)
