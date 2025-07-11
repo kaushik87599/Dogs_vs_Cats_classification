@@ -28,10 +28,9 @@ import torch.nn.functional as F
 from data.dataset import load_test_image
 
 
-
 def plot_training_metrics(model_name):
     log_in('Inside plot_training_metrics')
-    df = pd.read_csv(f'outputs/logs/{model_name}.csv',names=['Epoch', 'Time', 'Train Loss', 'Train Accuracy', 'Val Loss', 'Val Accuracy'])
+    df = pd.read_csv(f'outputs/logs/{model_name}.csv',header=None,names=['Epoch', 'Time', 'Train Loss', 'Train Accuracy', 'Val Loss', 'Val Accuracy'])
     # train_acc = df['Train Accuracy']
     # train_loss = df['Train Loss']
     # val_acc = df['Val Accuracy']
@@ -115,8 +114,11 @@ def Grad_cam(model, orig_image,save_path = None,class_idx=None):
     if(save_path==None):
         save_path=f'outputs/gradcam/gradcam_{model.__class__.__name__}.png'
     
-    image_tensor,_=load_test_image(orig_image)
+    # Ensure orig_image is a NumPy array here
+    # If orig_image is a PIL Image object, convert it
     
+    image_tensor, orig_image_np = load_test_image(orig_image) # Pass the NumPy array
+
     if torch.cuda.is_available():
         image_tensor = image_tensor.to('cuda')
         model.to('cuda')
@@ -136,7 +138,6 @@ def Grad_cam(model, orig_image,save_path = None,class_idx=None):
     forward_handle = conv_layer.register_forward_hook(forward_hook)
     backward_handle = conv_layer.register_full_backward_hook(backward_hook)
     
-
 
     # 1. Forward pass
     output = model(image_tensor)
@@ -160,21 +161,22 @@ def Grad_cam(model, orig_image,save_path = None,class_idx=None):
     grad_cam = (grad_cam - grad_cam.min()) / (grad_cam.max() - grad_cam.min() + 1e-8)  # Normalize to
 
     # 5. Overlay heatmap on original image
-    if orig_image is not None:
-        # orig_image: numpy array, shape [H, W, 3], range [0,255] or [0,1]
+    if orig_image_np is not None: # Use the NumPy array version
+        # orig_image_np: numpy array, shape [H, W, 3], range [0,255] or [0,1]
         grad_cam_uint8 = np.uint8(255 * grad_cam)
         grad_cam_uint8 = np.squeeze(grad_cam_uint8)
         if grad_cam_uint8.ndim != 2:
             raise ValueError("grad_cam_uint8 must be a 2D array for applyColorMap")
         heatmap = cv2.applyColorMap(grad_cam_uint8, cv2.COLORMAP_JET)
-        if orig_image.max() <= 1.0:
-            orig_image = (orig_image * 255).astype(np.uint8)
+
+        if orig_image_np.max() <= 1.0: # This check now works correctly
+            orig_image_np = (orig_image_np * 255).astype(np.uint8)
         # Ensure both images are uint8 and same shape
         heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
-        if orig_image.shape != heatmap.shape:
-            heatmap = cv2.resize(heatmap, (orig_image.shape[1], orig_image.shape[0]))
+        if orig_image_np.shape != heatmap.shape:
+            heatmap = cv2.resize(heatmap, (orig_image_np.shape[1], orig_image_np.shape[0]))
         # Set opacity to 50% for the heatmap
-        overlay = cv2.addWeighted(orig_image, 0.6, heatmap, 0.4, 0)
+        overlay = cv2.addWeighted(orig_image_np, 0.6, heatmap, 0.4, 0)
         cv2.imwrite(save_path, cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
     else:
         plt.imsave(save_path, grad_cam, cmap='jet')
@@ -186,6 +188,7 @@ def Grad_cam(model, orig_image,save_path = None,class_idx=None):
     # Clear for next use
     feature_maps.clear()
     gradients.clear()
+    log_in('Grad_cam done')
 
 def plot_layers(model):
     log_in('Inside plot_layers function')

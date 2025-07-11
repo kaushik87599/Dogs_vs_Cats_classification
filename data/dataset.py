@@ -44,16 +44,16 @@ def load_test_image(image_path):
     
     if isinstance(image_path, str):
         img =  Image.open(image_path).convert('RGB')
-    elif isinstance(image_path, Image.Image):
+    elif isinstance(image_path, Image.Image) or isinstance(image_path, np.ndarray):
         img = image_path
     else:
-        raise TypeError("Input must be a file path or PIL.Image.Image instance")
-    orig_image = np.array(img)
+        raise TypeError(f"Input must be a file path or PIL.Image.Image instance found {type(image_path)}")
+    orig_image_np = np.array(img)
     transf = get_val_transforms()
     img_tensor = transf(img)  # Apply transform to get a tensor
     image_tensor = torch.unsqueeze(img_tensor, 0)  # type: ignore # Add batch dimension
     image_tensor = image_tensor.to(device)
-    return image_tensor, orig_image
+    return image_tensor, orig_image_np
 
 # def load_test_image(path):
 #     log_in('-'*50+'\nInside load_test_image\n')

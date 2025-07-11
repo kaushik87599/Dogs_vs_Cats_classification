@@ -4,7 +4,7 @@ import torch
 from models.custom_cnn import custom_basic_cnn,custom_attention_cnn
 from utils.visualization import Grad_cam
 from data.dataset import load_test_image
-def test_web_image(img):
+def test_web_image(test_image):
         
     base_model = custom_basic_cnn()
     attention_model=custom_attention_cnn()
@@ -23,12 +23,11 @@ def test_web_image(img):
     # test_img = 'examples/dog3.jpeg'
     # test_img = 'examples/cats1.jpeg'
     # test_img = 'examples/cat2.jpeg'
-    test_img = 'data/processed/val/dogs/dog_155.jpg'
+   
 
 
-
-    prediction_base_model,confidence_base_model = test_image(model=base_model,img = test_img)
-    prediction_attention_model,confidence_attention_model = test_image(model=attention_model,img = test_img)
+    # prediction_base_model,confidence_base_model = test_image(model=base_model,img = test_img)
+    # prediction_attention_model,confidence_attention_model = test_image(model=attention_model,img = test_img)
 
     # image_tensor, orig_image = load_test_image(image_path=test_img)
 
@@ -37,3 +36,6 @@ def test_web_image(img):
 
     # print(f'Basic Model Prediction: {classification[prediction_base_model]}')
     # print(f'Attention Model Prediction: {classification[prediction_attention_model]}')
+    
+test_img = 'data/processed/val/cats/cat_116.jpg'
+test_web_image(test_image=test_img)

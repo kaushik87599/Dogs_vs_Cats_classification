@@ -37,7 +37,19 @@ for f in os.listdir(folder):
     if os.path.isfile(file_path):
         os.remove(file_path)
         
-folder = "webapp/uploads"
+folder = "webapp/static/uploads"
+for f in os.listdir(folder):
+    file_path = os.path.join(folder, f)
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+        
+folder = "webapp/static/outputs/plots"
+for f in os.listdir(folder):
+    file_path = os.path.join(folder, f)
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+        
+folder = "webapp/static/gradcam"
 for f in os.listdir(folder):
     file_path = os.path.join(folder, f)
     if os.path.isfile(file_path):
@@ -46,6 +58,11 @@ for f in os.listdir(folder):
 if os.path.exists('outputs/log.txt'):
     os.remove('outputs/log.txt')
     
-
+if os.path.exists('webapp/tempCodeRunnerFile.py'):
+    os.remove('webapp/tempCodeRunnerFile.py')
+    
+if os.path.exists('tempCodeRunnerFile.py'):
+    os.remove('tempCodeRunnerFile.py')
+    
 if os.path.exists("wandb"):
     shutil.rmtree("wandb")
