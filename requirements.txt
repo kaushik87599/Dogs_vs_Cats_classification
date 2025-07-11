@@ -9,4 +9,8 @@ scikit-learn
 torchsummary
 opencv-python
 streamlit
-PIL
+pillow
+flask
+torchviz
+wandb
+Jinja2

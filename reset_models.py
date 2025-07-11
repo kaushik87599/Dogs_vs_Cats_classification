@@ -37,6 +37,15 @@ for f in os.listdir(folder):
     if os.path.isfile(file_path):
         os.remove(file_path)
         
-        
+folder = "webapp/uploads"
+for f in os.listdir(folder):
+    file_path = os.path.join(folder, f)
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+
 if os.path.exists('outputs/log.txt'):
     os.remove('outputs/log.txt')
+    
+
+if os.path.exists("wandb"):
+    shutil.rmtree("wandb")

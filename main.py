@@ -10,8 +10,8 @@ from config import device,epochs
 
 model_batch_size = 32
 model_num_workers=2
-classes={'cats': 0, 'dogs': 1}
-classification = {1:'dogs',0:'cats'}
+
+
 
 
 if __name__=="__main__":
@@ -31,8 +31,10 @@ if __name__=="__main__":
     base_model = basic_model.to(device)
     attention_model = attention_model.to(device)
     
+    
     log_in('Basic Model started training')
     training(base_model,train_loader,val_loader,num_epochs=epochs)
+
     log_in('Basic Model finished training')
     
     log_in('Attention Model started training')

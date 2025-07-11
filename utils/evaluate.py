@@ -60,8 +60,8 @@ def test_image(model,img):
     # prediction=0
     with torch.no_grad():
         output = model(img_tensor)
-        prediction = torch.argmax(output, dim=1)
-        prediction = prediction.item()
-
+        probs = torch.softmax(output, dim=1)     # convert to probabilities
+        confidence, prediction = torch.max(probs, dim=1)
+        
     
-    return int(prediction)
+    return prediction, confidence

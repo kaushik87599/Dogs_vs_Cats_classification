@@ -25,68 +25,73 @@ import torch
 import cv2      
 from utils.metrics_logger import log_in
 import torch.nn.functional as F
+from data.dataset import load_test_image
 
 
 
 def plot_training_metrics(model_name):
     log_in('Inside plot_training_metrics')
     df = pd.read_csv(f'outputs/logs/{model_name}.csv',names=['Epoch', 'Time', 'Train Loss', 'Train Accuracy', 'Val Loss', 'Val Accuracy'])
-    train_acc = df['Train Accuracy']
-    train_loss = df['Train Loss']
-    val_acc = df['Val Accuracy']
-    val_loss = df['Val Loss']
+    # train_acc = df['Train Accuracy']
+    # train_loss = df['Train Loss']
+    # val_acc = df['Val Accuracy']
+    # val_loss = df['Val Loss']
     epoch = df['Epoch']
     time = df['Time']
-    fig, ax1 = plt.subplots(figsize=(10, 6))
+    def helper_function(model_name,attr1,attr2):
+        
+        fig, ax1 = plt.subplots(figsize=(10, 6))
 
-    # Plot the lines on the first axes
-    ax1.plot(epoch, train_acc, label='Train Accuracy', color='green')
-    ax1.plot(epoch, train_loss, label='Train Loss', color='red')
-    ax1.plot(epoch, val_acc, label='Val Accuracy', color='blue')
-    ax1.plot(epoch, val_loss, label='Val Loss', color='orange')
+        # Plot the lines on the first axes
+        ax1.plot(epoch, df[attr1], label=attr1, color='green')
+        ax1.plot(epoch, df[attr2], label=attr2, color='red')
+        
 
-    # Set labels and title for the first axes
-    ax1.set_xlabel('Epoch')
-    ax1.set_ylabel('Value (Accuracy/Loss)')
-    ax1.set_title(f'Training Metrics of Model {model_name}')
-    ax1.tick_params(axis='y')
+        # Set labels and title for the first axes
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Value (Accuracy or Loss)')
+        ax1.set_title(f'{attr1} vs {attr2} Metrics of Model {model_name}')
+        ax1.tick_params(axis='y')
 
-    # Calculate x-axis limits with a gap
-    # You can adjust this 'buffer_epochs' value for more or less gap
-    buffer_epochs = 0.5
-    x_min_buffered = min(epoch) - buffer_epochs
-    x_max_buffered = max(epoch) + buffer_epochs
+        # Calculate x-axis limits with a gap
+        # You can adjust this 'buffer_epochs' value for more or less gap
+        buffer_epochs = 0.5
+        x_min_buffered = min(epoch) - buffer_epochs
+        x_max_buffered = max(epoch) + buffer_epochs
 
-    # Explicitly set x-ticks for the primary axis
-    ax1.set_xticks(epoch)
-    # Set x-axis limits with the calculated gap
-    ax1.set_xlim(x_min_buffered, x_max_buffered)
-    # IMPORTANT: Remove ax1.margins(x=0) as we are manually setting xlim for the gap
-    # ax1.margins(x=0)
+        # Explicitly set x-ticks for the primary axis
+        ax1.set_xticks(epoch)
+        # Set x-axis limits with the calculated gap
+        ax1.set_xlim(x_min_buffered, x_max_buffered)
+        # IMPORTANT: Remove ax1.margins(x=0) as we are manually setting xlim for the gap
+        # ax1.margins(x=0)
 
-    # Move the legend outside the plot area
-    ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        # Move the legend outside the plot area
+        ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
-    # Create a twin axes sharing the x-axis
-    ax2 = ax1.twiny()
+        # Create a twin axes sharing the x-axis
+        ax2 = ax1.twiny()
 
-    # Crucial for alignment: Set ax2 ticks to be exactly the same locations as ax1 ticks
-    ax2.set_xticks(ax1.get_xticks())
-    # Set the new x-axis labels, formatted to two decimal places for consistency
-    ax2.set_xticklabels([f'{t:.4f} sec' for t in time])
-    ax2.set_xlabel('Time')
-    ax2.tick_params(axis='x',rotation=90)
+        # Crucial for alignment: Set ax2 ticks to be exactly the same locations as ax1 ticks
+        ax2.set_xticks(ax1.get_xticks())
+        # Set the new x-axis labels, formatted to two decimal places for consistency
+        ax2.set_xticklabels([f'{t:.4f} sec' for t in time])
+        ax2.set_xlabel('Time')
+        ax2.tick_params(axis='x',rotation=90)
 
-    # Apply the same x-axis limits (with gap) to the twin axis
-    ax2.set_xlim(x_min_buffered, x_max_buffered)
-    # IMPORTANT: Remove ax2.margins(x=0)
-    # ax2.margins(x=0)
+        # Apply the same x-axis limits (with gap) to the twin axis
+        ax2.set_xlim(x_min_buffered, x_max_buffered)
+        # IMPORTANT: Remove ax2.margins(x=0)
+        # ax2.margins(x=0)
 
-    # Adjust the plot area to make space for the legend on the right
-    plt.tight_layout(rect=(0, 0,1, 1))
+        # Adjust the plot area to make space for the legend on the right
+        plt.tight_layout(rect=(0, 0,1, 1))
 
-    # Display the plot (save to file)
-    plt.savefig(f'outputs/plots/train_metrics_of_{model_name}.png')
+        # Display the plot (save to file)
+        plt.savefig(f'outputs/plots/{attr1}_vs_{attr2}_Metrics_{model_name}.png')
+    
+    helper_function(model_name,'Train Accuracy','Train Loss')
+    helper_function(model_name,'Val Accuracy','Val Loss')
     
 def plot_confusion_matrix(cm,model_name):
     log_in('Inside plot_confusion_matrix')
@@ -105,10 +110,12 @@ def get_last_conv_layer(model):
             return layer.conv
     raise ValueError("No Conv2d layer found in model.base_cnn")
 
-def Grad_cam(model, image_tensor, orig_image=None, class_idx=None):
+def Grad_cam(model, orig_image,save_path = None,class_idx=None):
     log_in('Inside Grad_cam')
-    save_path=f'outputs/gradcam/gradcam_{model.__class__.__name__}.png'
+    if(save_path==None):
+        save_path=f'outputs/gradcam/gradcam_{model.__class__.__name__}.png'
     
+    image_tensor,_=load_test_image(orig_image)
     
     if torch.cuda.is_available():
         image_tensor = image_tensor.to('cuda')

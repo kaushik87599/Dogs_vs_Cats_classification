@@ -51,7 +51,7 @@ def load_test_image(image_path):
     orig_image = np.array(img)
     transf = get_val_transforms()
     img_tensor = transf(img)  # Apply transform to get a tensor
-    image_tensor = torch.unsqueeze(img_tensor, 0)  # Add batch dimension
+    image_tensor = torch.unsqueeze(img_tensor, 0)  # type: ignore # Add batch dimension
     image_tensor = image_tensor.to(device)
     return image_tensor, orig_image
 

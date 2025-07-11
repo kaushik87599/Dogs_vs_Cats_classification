@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat/Dog Image Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .grad-cam-container {
+            transition: all 0.3s ease;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .grad-cam-container.active {
+            opacity: 1;
+            height: auto;
+        }
+
+        .drop-area {
+            border: 2px dashed #2c2f35;
+            transition: all 0.2s ease;
+        }
+
+        .drop-area.highlight {
+            border-color: #3b82f6;
+            background-color: rgba(61, 128, 235, 0.05);
+        }
+
+        .result-box {
+            transition: all 0.3s ease;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* 3 columns */
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .card {
+            border: 1px solid #e2e8f0;
+            /* Light gray border */
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card img {
+            width: 100%;
+            height: auto;
+        }
+
+        .card-info {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Darker blue for the classify button */
+        .classify-btn {
+            background-color: #1e3a8a;
+            /* Darker blue */
+        }
+
+        .classify-btn:hover {
+            background-color: #1e40af;
+            /* Even darker on hover */
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stay in place */
+            z-index: 1000;
+            /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width */
+            height: 100%;
+            /* Full height */
+            overflow: auto;
+            /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0);
+            /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.9);
+            /* Black w/ opacity */
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            }
+
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-200 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-3xl bg-white rounded-xl shadow-xl overflow-hidden">
+        <div class="p-6 bg-gray-800 text-white">
+            <h1 class="text-2xl font-bold">Cat/Dog Image Classifier</h1>
+            <p class="text-gray-300 mt-1">Upload an image to classify whether it's a cat or dog</p>
+        </div>
+
+        <div class="p-6">
+            <!-- Image Upload Area -->
+            <div id="dropArea" class="drop-area rounded-lg p-8 text-center cursor-pointer mb-6">
+                <div class="flex flex-col items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-500 mb-3" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="text-gray-600 mb-2">Drag & drop your image here</p>
+                    <p class="text-sm text-gray-500 mb-4">or click to browse files</p>
+                    <input type="file" id="fileInput" class="hidden" accept="image/*">
+                    <button id="browseBtn"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                        Browse Images
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grad-CAM Toggle -->
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-medium text-gray-700">Grad-CAM Visualization</h3>
+                    <p class="text-sm text-gray-500">Toggle to see heatmap visualization</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="gradCamToggle" class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                    </div>
+                </label>
+            </div>
+
+        <!-- Grad-CAM Visualization -->
+        {% if gradcam_base and gradcam_attention %}
+        <div id="gradCamContainer" class="grad-cam-container mb-6">
+            <h2 class="text-lg font-semibold mb-3">Grad-CAM Heatmaps</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="border rounded-lg overflow-hidden">
+                    <img src="{{ gradcam_base }}" alt="Base Model Grad-CAM" class="w-full h-auto" />
+                    <p class="text-center text-sm text-gray-600 p-2">Base CNN</p>
+                </div>
+                <div class="border rounded-lg overflow-hidden">
+                    <img src="{{ gradcam_attention }}" alt="Attention Model Grad-CAM" class="w-full h-auto" />
+                    <p class="text-center text-sm text-gray-600 p-2">Attention CNN</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">These heatmaps highlight the most influential regions for each model's
+                decision.</p>
+        </div>
+        {% endif %}
+
+
+            <!-- Preview Area -->
+            <div id="previewContainer" class="hidden mb-6">
+                <h2 class="text-lg font-semibold mb-3">Image Preview</h2>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-1">
+                        <div class="border rounded-lg overflow-hidden">
+                            <img id="previewImage" src="#" alt="Uploaded image preview"
+                                class="w-full h-auto max-h-64 object-contain" />
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <!-- Result Box for Base Model -->
+                        <div class="result-box bg-gray-100 p-4 rounded-lg mb-4">
+                            <h3 class="font-medium text-gray-700 mb-2">Base CNN Prediction:</h3>
+                            <div id="resultBaseText" class="text-xl font-bold text-gray-800">-</div>
+                            <div id="confidenceBaseText" class="text-sm text-gray-600 mt-1">Confidence: -</div>
+                        </div>
+                        
+                        <!-- Result Box for Attention Model -->
+                        <div class="result-box bg-gray-100 p-4 rounded-lg">
+                            <h3 class="font-medium text-gray-700 mb-2">Attention CNN Prediction:</h3>
+                            <div id="resultAttentionText" class="text-xl font-bold text-gray-800">-</div>
+                            <div id="confidenceAttentionText" class="text-sm text-gray-600 mt-1">Confidence: -</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classify Button -->
+            <button id="classifyBtn"
+                class="classify-btn w-full py-3 text-white rounded-lg font-medium hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+                Classify Image
+            </button>
+
+            <!-- See More Toggle -->
+            <div id="seeMoreToggle" class="text-center mt-4 cursor-pointer text-blue-600 hover:underline">
+                See More
+            </div>
+
+            <!-- Image Grid -->
+            <div id="imageGrid" class="image-grid hidden">
+                <div class="card" >
+                    <img src="/outputs/plots/Train Accuracy_vs_Train Loss_Metrics_custom_basic_cnn.png" 
+                    alt="Train Accuracy_vs_Train Loss_Metrics_basic_cnn"
+                    class="w-full h-auto rounded-lg shadow">
+                    <div class="card-info">
+                        <h4 class="font-semibold">Base Model</h4>
+                        <h5 class="font-semibold">Train Accuracy vs Train Loss</h5>
+                        <p>Train Accuracy = {{ train_base_acc }}%</p>
+                        <p>Train Loss = {{ train_base_loss }}</p>
+
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="/outputs/plots/Train Accuracy_vs_Train Loss_Metrics_custom_attention_cnn.png"
+                        alt="Train Accuracy_vs_Train Loss_Metrics_attention_cnn" class="w-full h-auto rounded-lg shadow">
+                    <div class="card-info">
+                        <h4 class="font-semibold">Squeeze-and-Excitation Attention Model</h4>
+                        <h5 class="font-semibold">Train Accuracy vs Train Loss</h5>
+                        <p>Train Accuracy = {{ train_attention_acc }}%</p>
+                        <p>Train Loss = {{ train_attention_loss }}</p>
+
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="/outputs/plots/Val Accuracy_vs_Val Loss_Metrics_custom_basic_cnn.png"
+                        alt="Validation Accuracy vs Validation Loss Metrics_basic_cnn" 
+                        class="w-full h-auto rounded-lg shadow">
+                    <div class="card-info">
+                        <h4 class="font-semibold">Base Model</h4>
+                        <h5 class="font-semibold">Validation Accuracy vs Validation Loss</h5>
+                        <p>Validation Accuracy = {{ Validation_base_acc }}%</p>
+                        <p>Validation Loss = {{ Validation_base_loss }}</p>
+
+                    </div>
+                </div>
+                <div class="card" >
+                    <img src="/outputs/plots/Val Accuracy_vs_Val Loss_Metrics_custom_attention_cnn.png" 
+                    alt="Validation Accuracy vs Validation Loss Metrics_attention_cnn"
+                    class="w-full h-auto rounded-lg shadow">
+                    <div class="card-info">
+                        <h4 class="font-semibold">Squeeze-and-Excitation Attention Model</h4>
+                        <h5 class="font-semibold">Validation Accuracy vs Validation Loss</h5>
+                        <p>Validation Accuracy = {{ Validation_attention_acc }}%</p>
+                        <p>Validation Loss = {{ Validation_attention_loss }}</p>
+                    </div>
+                </div>
+                <div class="card" >
+                    <img src="/outputs/plots/confusion_matrix_custom_basic_cnn.png"
+                    alt="Confusion Matrix basic_cnn" 
+                    class="w-full h-auto rounded-lg shadow">
+                    <div class="card-info">
+                        <h4 class="font-semibold">Base Model</h4>
+                        <p>Confusion Matrix</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="/outputs/plots/confusion_matrix_custom_attention_cnn.png" 
+                    alt="Confusion Matrix attention_cnn" 
+                    class="w-full h-auto rounded-lg shadow">
+                    <div class="card-info">
+                        <h4 class="font-semibold">Base Model</h4>
+                        <p>Confusion Matrix</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Enlarged Image -->
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage" alt="Enlarged Plot">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const previewContainer = document.getElementById('previewContainer');
+            const previewImage = document.getElementById('previewImage');
+            
+            const classifyBtn = document.getElementById('classifyBtn');
+            const gradCamToggle = document.getElementById('gradCamToggle');
+            const gradCamContainer = document.getElementById('gradCamContainer');
+            const gradCamImage = document.getElementById('gradCamImage');
+            const seeMoreToggle = document.getElementById('seeMoreToggle');
+            const imageGrid = document.getElementById('imageGrid');
+            const modal = document.getElementById("myModal");
+            const modalImage = document.getElementById("modalImage");
+            const closeModal = document.getElementsByClassName("close")[0];
+            document.getElementById('resultBaseText').textContent = "Dog";
+            document.getElementById('confidenceBaseText').textContent = "Confidence: 91%";
+
+            document.getElementById('resultAttentionText').textContent = "Dog";
+            document.getElementById('confidenceAttentionText').textContent = "Confidence: 94%";
+
+
+            let currentFile = null;
+
+            // Handle drag and drop events
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropArea.classList.add('highlight');
+            }
+
+            function unhighlight() {
+                dropArea.classList.remove('highlight');
+            }
+
+            // Handle dropped files
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length) {
+                    handleFiles(files);
+                }
+            }
+
+            // Handle file input
+            browseBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', function () {
+                if (this.files.length) {
+                    handleFiles(this.files);
+                }
+            });
+
+            // Process files
+            function handleFiles(files) {
+                const file = files[0];
+                if (!file.type.match('image.*')) {
+                    alert('Please upload an image file');
+                    return;
+                }
+
+                currentFile = file;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    classifyBtn.disabled = false;
+                    resultText.textContent = '-';
+                    confidenceText.textContent = 'Confidence: -';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Handle see more toggle
+            seeMoreToggle.addEventListener('click', function () {
+                imageGrid.classList.toggle('hidden');
+                this.textContent = imageGrid.classList.contains('hidden') ? 'See More' : 'See Less';
+            });
+
+            // Handle card click
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('click', function () {
+                    modal.style.display = "block";
+                    modalImage.src = this.dataset.url; // Set the modal image source to the clicked card's image
+                });
+            });
+
+            // Close modal when the user clicks on <span> (x)
+            closeModal.onclick = function () {
+                modal.style.display = "none";
+            }
+
+            // Close modal when the user clicks anywhere outside of the modal
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            // Classify button handler
+            classifyBtn.addEventListener('click', function () {
+                if (!currentFile) return;
+
+                // Simulate classification (in a real app, this would be an API call)
+                setTimeout(() => {
+                    const isCat = Math.random() > 0.5;
+                    const confidence = (Math.random() * 0.5 + 0.5).toFixed(2);
+
+                    resultText.textContent = isCat ? 'Cat' : 'Dog';
+                    confidenceText.textContent = `Confidence: ${confidence * 100}%`;
+
+                    // Update result box styling based on classification
+                    const resultBox = document.querySelector('.result-box');
+                    resultBox.classList.remove('bg-gray-100');
+                    resultBox.classList.add(isCat ? 'bg-blue-50' : 'bg-orange-50');
+
+                    // Update text color
+                    resultText.classList.remove('text-gray-800');
+                    resultText.classList.add(isCat ? 'text-blue-800' : 'text-orange-800');
+
+                    // Simulate Grad-CAM image (in a real app, this would come from the API)
+                    if (gradCamToggle.checked) {
+                        gradCamImage.src = `https://placehold.co/600x400?text=Grad-CAM+${isCat ? 'Cat' : 'Dog'}`;
+                    }
+                }, 1000);
+            });
+
+            // Grad-CAM toggle handler
+            gradCamToggle.addEventListener('change', function () {
+                gradCamContainer.classList.toggle('active', this.checked);
+
+                // If toggled on and we have a classification, show Grad-CAM
+                if (this.checked && resultText.textContent !== '-') {
+                    const isCat = resultText.textContent === 'Cat';
+                    gradCamImage.src = `https://placehold.co/600x400?text=Grad-CAM+${isCat ? 'Cat' : 'Dog'}`;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
