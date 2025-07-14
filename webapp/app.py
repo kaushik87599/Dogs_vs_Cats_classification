@@ -7,14 +7,13 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import torch
 import pandas as pd
-import subprocess
 
-sys.path.append(os.path.abspath('.'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from models.custom_cnn import get_models
 from utils.visualization import Grad_cam
 from utils.evaluate import test_image
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -149,4 +148,6 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)  
