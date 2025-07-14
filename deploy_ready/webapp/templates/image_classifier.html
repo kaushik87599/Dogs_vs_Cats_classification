@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat/Dog Image Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .grad-cam-container {
+            transition: all 0.3s ease;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .grad-cam-container.active {
+            opacity: 1;
+            height: auto;
+        }
+
+        .drop-area {
+            border: 2px dashed #ccc;
+            transition: all 0.2s ease;
+        }
+
+        .drop-area.highlight {
+            border-color: #3b82f6;
+            background-color: #f0f5ff;
+        }
+
+        .result-box {
+            transition: all 0.3s ease;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card img {
+            width: 100%;
+            height: auto;
+        }
+
+        .card-info {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .classify-btn {
+            background-color: #1e3a8a;
+        }
+
+        .classify-btn:hover {
+            background-color: #1e40af;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 bg-gray-800 text-white">
+            <h1 class="text-3xl font-bold">Cat & Dog Image Classifier</h1>
+            <p class="text-gray-300 mt-1">Upload an image to classify it using a Basic CNN and an Attention-based CNN
+            </p>
+        </div>
+
+        <div class="p-6">
+            <form id="uploadForm" method="post" enctype="multipart/form-data" class="w-full">
+                <div id="dropArea" class="drop-area rounded-lg p-8 text-center cursor-pointer mb-6 bg-gray-50">
+                    <div class="flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-3" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-gray-600 mb-2">Drag & drop your image here</p>
+                        <p class="text-sm text-gray-500 mb-4">or</p>
+                        <input type="file" name="file" id="fileInput" class="hidden" accept="image/*">
+                        <button type="button" id="browseBtn"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                            Browse Image
+                        </button>
+                    </div>
+                </div>
+
+                <div id="previewContainer" class="hidden mb-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Preview & Results</h2>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="flex-1">
+                            <div class="border rounded-lg overflow-hidden shadow-sm">
+                                <img id="previewImage" src="#" alt="Uploaded image preview"
+                                    class="w-full h-auto max-h-80 object-contain" />
+                            </div>
+                        </div>
+                        <div class="flex-1 space-y-4">
+                            <div class="result-box bg-gray-100 p-4 rounded-lg">
+                                <h3 class="font-medium text-gray-700 mb-2">Base CNN Prediction</h3>
+                                <div id="resultBaseText" class="text-2xl font-bold text-blue-800">
+                                    {% if uploaded %}{{ base_result["label"] }}{% else %}-{% endif %}
+                                </div>
+                                <div id="confidenceBaseText" class="text-sm text-gray-600 mt-1">
+                                    Confidence: {% if uploaded %}{{ base_result["confidence"] }}%{% else %}-{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="result-box bg-gray-100 p-4 rounded-lg">
+                                <h3 class="font-medium text-gray-700 mb-2">Attention CNN Prediction</h3>
+                                <div id="resultAttentionText" class="text-2xl font-bold text-green-800">
+                                    {% if uploaded %}{{ attention_result["label"] }}{% else %}-{% endif %}
+                                </div>
+                                <div id="confidenceAttentionText" class="text-sm text-gray-600 mt-1">
+                                    Confidence: {% if uploaded %}{{ attention_result["confidence"] }}%{% else %}-{%
+                                    endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if uploaded %}
+                <div class="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-medium text-gray-700">Grad-CAM Visualization</h3>
+                        <p class="text-sm text-gray-500">Toggle to see heatmap visualizations</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="gradCamToggle" class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                        </div>
+                    </label>
+                </div>
+
+                <div id="gradCamContainer" class="grad-cam-container mb-6">
+                    <h2 class="text-lg font-semibold mb-3">Grad-CAM Heatmaps</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border rounded-lg overflow-hidden">
+                            <img src="{{ gradcam_base }}" alt="Base Model Grad-CAM" class="w-full h-auto" />
+                            <p class="text-center text-sm text-gray-600 p-2 bg-gray-50">Base CNN</p>
+                        </div>
+                        <div class="border rounded-lg overflow-hidden">
+                            <img src="{{ gradcam_attention }}" alt="Attention Model Grad-CAM" class="w-full h-auto" />
+                            <p class="text-center text-sm text-gray-600 p-2 bg-gray-50">Attention CNN</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">These heatmaps highlight the image regions most influential
+                        for each model's decision.</p>
+                </div>
+                {% endif %}
+
+                <button id="classifyBtn" type="submit"
+                    class="classify-btn w-full py-3 text-white rounded-lg font-medium hover:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    Classify Image
+                </button>
+            </form>
+
+            <div class="mt-6 border-t pt-6">
+                <div id="seeMoreToggle" class="text-center cursor-pointer text-blue-600 hover:underline font-medium">
+                    Show Model Performance Metrics
+                </div>
+                <div id="imageGrid" class="image-grid hidden mt-4">
+                    <div class="card"
+                        data-url="{{ url_for('static', filename='outputs/plots/Train Accuracy_vs_Train Loss_Metrics_custom_basic_cnn.png') }}">
+                        <img src="{{ url_for('static', filename='outputs/plots/Train Accuracy_vs_Train Loss_Metrics_custom_basic_cnn.png') }}"
+                            alt="Train Metrics Basic CNN">
+                        <div class="card-info">
+                            <h4 class="font-semibold">Base Model</h4>
+                            <p class="text-sm">Train Acc: {{ train_base_acc }}% | Train Loss: {{ train_base_loss }}</p>
+                        </div>
+                    </div>
+                    <div class="card"
+                        data-url="{{ url_for('static', filename='outputs/plots/Train Accuracy_vs_Train Loss_Metrics_custom_attention_cnn.png') }}">
+                        <img src="{{ url_for('static', filename='outputs/plots/Train Accuracy_vs_Train Loss_Metrics_custom_attention_cnn.png') }}"
+                            alt="Train Metrics Attention CNN">
+                        <div class="card-info">
+                            <h4 class="font-semibold">Attention Model</h4>
+                            <p class="text-sm">Train Acc: {{ train_attention_acc }}% | Train Loss: {{
+                                train_attention_loss }}</p>
+                        </div>
+                    </div>
+                    <div class="card"
+                        data-url="{{ url_for('static', filename='outputs/plots/Val Accuracy_vs_Val Loss_Metrics_custom_basic_cnn.png') }}">
+                        <img src="{{ url_for('static', filename='outputs/plots/Val Accuracy_vs_Val Loss_Metrics_custom_basic_cnn.png') }}"
+                            alt="Validation Metrics Basic CNN">
+                        <div class="card-info">
+                            <h4 class="font-semibold">Base Model</h4>
+                            <p class="text-sm">Val Acc: {{ val_base_acc }}% | Val Loss: {{ val_base_loss }}</p>
+                        </div>
+                    </div>
+                    <div class="card"
+                        data-url="{{ url_for('static', filename='outputs/plots/Val Accuracy_vs_Val Loss_Metrics_custom_attention_cnn.png') }}">
+                        <img src="{{ url_for('static', filename='outputs/plots/Val Accuracy_vs_Val Loss_Metrics_custom_attention_cnn.png') }}"
+                            alt="Validation Metrics Attention CNN">
+                        <div class="card-info">
+                            <h4 class="font-semibold">Attention Model</h4>
+                            <p class="text-sm">Val Acc: {{ val_attention_acc }}% | Val Loss: {{ val_attention_loss }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card"
+                        data-url="{{ url_for('static', filename='outputs/plots/confusion_matrix_custom_basic_cnn.png') }}">
+                        <img src="{{ url_for('static', filename='outputs/plots/confusion_matrix_custom_basic_cnn.png') }}"
+                            alt="Confusion Matrix Basic CNN">
+                        <div class="card-info">
+                            <h4 class="font-semibold">Base Model Confusion Matrix</h4>
+                        </div>
+                    </div>
+                    <div class="card"
+                        data-url="{{ url_for('static', filename='outputs/plots/confusion_matrix_custom_attention_cnn.png') }}">
+                        <img src="{{ url_for('static', filename='outputs/plots/confusion_matrix_custom_attention_cnn.png') }}"
+                            alt="Confusion Matrix Attention CNN">
+                        <div class="card-info">
+                            <h4 class="font-semibold">Attention Model Confusion Matrix</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage" alt="Enlarged Plot">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const previewContainer = document.getElementById('previewContainer');
+            const previewImage = document.getElementById('previewImage');
+            const classifyBtn = document.getElementById('classifyBtn');
+            const uploadForm = document.getElementById('uploadForm');
+
+            // Use a variable that might exist or be null
+            const gradCamToggle = document.getElementById('gradCamToggle');
+            const gradCamContainer = document.getElementById('gradCamContainer');
+
+            const seeMoreToggle = document.getElementById('seeMoreToggle');
+            const imageGrid = document.getElementById('imageGrid');
+            const modal = document.getElementById("myModal");
+            const modalImage = document.getElementById("modalImage");
+            const closeModal = document.getElementsByClassName("close")[0];
+
+            // If the page is loaded with results, show the preview container
+            if ("{{ uploaded }}" === "True") {
+                previewContainer.classList.remove('hidden');
+                previewImage.src = "{{ image_src }}";
+            }
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlight() {
+                dropArea.classList.add('highlight');
+            }
+
+            function unhighlight() {
+                dropArea.classList.remove('highlight');
+            }
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                fileInput.files = dt.files;
+                handleFiles(dt.files);
+            }
+
+            browseBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', function () {
+                handleFiles(this.files);
+            });
+
+            function handleFiles(files) {
+                if (files.length === 0) return;
+                const file = files[0];
+                if (!file.type.startsWith('image/')) {
+                    alert('Please upload an image file.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // This is the logic that runs after a file is selected
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    classifyBtn.disabled = false; // Enable the button
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Handle see more toggle for static metrics
+            seeMoreToggle.addEventListener('click', function () {
+                const isHidden = imageGrid.classList.toggle('hidden');
+                this.textContent = isHidden ? 'Show Model Performance Metrics' : 'Hide Model Performance Metrics';
+            });
+
+            // Handle card click to open modal
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', function () {
+                    modal.style.display = "block";
+                    modalImage.src = this.dataset.url;
+                });
+            });
+
+            closeModal.onclick = () => modal.style.display = "none";
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            };
+
+            // FIX: Simplified Grad-CAM toggle handler
+            // This only runs if the toggle exists on the page (i.e., after upload)
+            if (gradCamToggle && gradCamContainer) {
+                gradCamToggle.addEventListener('change', function () {
+                    gradCamContainer.classList.toggle('active', this.checked);
+                });
+            }
+
+            // Instead of fetch, we just let the form submit naturally
+            // This avoids the need for a page reload and simplifies the code
+            uploadForm.addEventListener('submit', function () {
+                classifyBtn.textContent = 'Classifying...';
+                classifyBtn.disabled = true;
+            });
+        });
+    </script>
+</body>
+
+</html>

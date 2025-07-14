@@ -1,0 +1,70 @@
+_wandb:
+    value:
+        cli_version: 0.21.0
+        e:
+            k7cccp191frgu1xoa88lcn1tgq7vplft:
+                codePath: main.py
+                codePathLocal: main.py
+                cpu_count: 6
+                cpu_count_logical: 12
+                cudaVersion: "12.8"
+                disk:
+                    /:
+                        total: "501809635328"
+                        used: "268625555456"
+                email: mkaushik9491@gmail.com
+                executable: /home/kaushik/Documents/cat_dog_classifier_NN/.venv/bin/python3
+                git:
+                    commit: 1e5ef4d0cc64c19b44d42c3c238ed4e41587f90e
+                    remote: https://github.com/kaushik87599/Dogs_vs_Cats_classification.git
+                gpu: NVIDIA GeForce RTX 3050 Laptop GPU
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 2048
+                      memoryTotal: "4294967296"
+                      name: NVIDIA GeForce RTX 3050 Laptop GPU
+                      uuid: GPU-a0a3e102-a697-7382-3078-a8703980e790
+                host: kaushik-Dell-G15-5511
+                memory:
+                    total: "7502053376"
+                os: Linux-6.14.0-23-generic-x86_64-with-glibc2.41
+                program: /home/kaushik/Documents/cat_dog_classifier_NN/main.py
+                python: CPython 3.13.3
+                root: /home/kaushik/Documents/cat_dog_classifier_NN
+                startedAt: "2025-07-14T12:25:26.734992Z"
+                writerId: k7cccp191frgu1xoa88lcn1tgq7vplft
+        m: []
+        python_version: 3.13.3
+        t:
+            "1":
+                - 1
+                - 5
+                - 41
+                - 53
+            "2":
+                - 1
+                - 5
+                - 41
+                - 53
+            "3":
+                - 1
+                - 2
+                - 13
+                - 16
+            "4": 3.13.3
+            "5": 0.21.0
+            "10":
+                - 20
+            "12": 0.21.0
+            "13": linux-x86_64
+epochs:
+    value: 30
+loss_function:
+    value: CrossEntropy
+model:
+    value: custom_basic_cnn
+optimizer:
+    value: Adam
+scheduler:
+    value: StepLR
