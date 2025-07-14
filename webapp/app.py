@@ -14,10 +14,16 @@ from models.custom_cnn import get_models
 from utils.visualization import Grad_cam
 from utils.evaluate import test_image
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # FIX: Placed UPLOAD_FOLDER inside 'static' to make files servable
+import sys
+import os
+
+# Add the root directory (one level up) to the Python path
+
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 GRADCAM_FOLDER = os.path.join(BASE_DIR, "static", "gradcam")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
