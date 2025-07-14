@@ -1,0 +1,24 @@
+2025-07-14 17:56:59,921 INFO    MainThread:168106 [wandb_init.py:setup_run_log_directory():703] Logging user logs to /home/kaushik/Documents/cat_dog_classifier_NN/wandb/run-20250714_175659-u6c0bpqf/logs/debug.log
+2025-07-14 17:56:59,922 INFO    MainThread:168106 [wandb_init.py:setup_run_log_directory():704] Logging internal logs to /home/kaushik/Documents/cat_dog_classifier_NN/wandb/run-20250714_175659-u6c0bpqf/logs/debug-internal.log
+2025-07-14 17:56:59,922 INFO    MainThread:168106 [wandb_init.py:init():830] calling init triggers
+2025-07-14 17:56:59,922 INFO    MainThread:168106 [wandb_init.py:init():835] wandb.init called with sweep_config: {}
+config: {'model': 'custom_attention_cnn', 'epochs': 30, 'optimizer': 'Adam', 'loss_function': 'CrossEntropy', 'scheduler': 'StepLR', '_wandb': {}}
+2025-07-14 17:56:59,922 INFO    MainThread:168106 [wandb_init.py:init():871] starting backend
+2025-07-14 17:56:59,922 INFO    MainThread:168106 [wandb_init.py:init():874] sending inform_init request
+2025-07-14 17:56:59,923 INFO    MainThread:168106 [wandb_init.py:init():882] backend started and connected
+2025-07-14 17:56:59,925 INFO    MainThread:168106 [wandb_init.py:init():953] updated telemetry
+2025-07-14 17:56:59,928 INFO    MainThread:168106 [wandb_init.py:init():977] communicating run to backend with 90.0 second timeout
+2025-07-14 17:57:00,890 INFO    MainThread:168106 [wandb_init.py:init():1029] starting run threads in backend
+2025-07-14 17:57:00,970 INFO    MainThread:168106 [wandb_run.py:_console_start():2458] atexit reg
+2025-07-14 17:57:00,970 INFO    MainThread:168106 [wandb_run.py:_redirect():2306] redirect: wrap_raw
+2025-07-14 17:57:00,970 INFO    MainThread:168106 [wandb_run.py:_redirect():2375] Wrapping output streams.
+2025-07-14 17:57:00,970 INFO    MainThread:168106 [wandb_run.py:_redirect():2398] Redirects installed.
+2025-07-14 17:57:00,971 INFO    MainThread:168106 [wandb_init.py:init():1075] run started, returning control to user process
+2025-07-14 17:57:00,971 INFO    MainThread:168106 [wandb_watch.py:_watch():70] Watching
+2025-07-14 17:58:25,842 INFO    MainThread:168106 [wandb_run.py:_finish():2224] finishing run mkaushik9491-iiit-nagpur-official/dogs-vs-cats_classification/u6c0bpqf
+2025-07-14 17:58:25,850 INFO    MainThread:168106 [wandb_run.py:_atexit_cleanup():2423] got exitcode: 0
+2025-07-14 17:58:25,850 INFO    MainThread:168106 [wandb_run.py:_restore():2405] restore
+2025-07-14 17:58:25,851 INFO    MainThread:168106 [wandb_run.py:_restore():2411] restore done
+2025-07-14 17:58:27,444 INFO    MainThread:168106 [wandb_run.py:_footer_history_summary_info():3903] rendering history
+2025-07-14 17:58:27,444 INFO    MainThread:168106 [wandb_run.py:_footer_history_summary_info():3935] rendering summary
+2025-07-14 17:58:27,444 INFO    MainThread:168106 [wandb_run.py:_footer_sync_info():3864] logging synced files

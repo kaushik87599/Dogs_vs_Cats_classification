@@ -1,0 +1,40 @@
+{
+  "os":  "Linux-6.14.0-23-generic-x86_64-with-glibc2.41",
+  "python":  "CPython 3.13.3",
+  "startedAt":  "2025-07-14T12:25:26.734992Z",
+  "program":  "/home/kaushik/Documents/cat_dog_classifier_NN/main.py",
+  "codePath":  "main.py",
+  "codePathLocal":  "main.py",
+  "git":  {
+    "remote":  "https://github.com/kaushik87599/Dogs_vs_Cats_classification.git",
+    "commit":  "1e5ef4d0cc64c19b44d42c3c238ed4e41587f90e"
+  },
+  "email":  "mkaushik9491@gmail.com",
+  "root":  "/home/kaushik/Documents/cat_dog_classifier_NN",
+  "host":  "kaushik-Dell-G15-5511",
+  "executable":  "/home/kaushik/Documents/cat_dog_classifier_NN/.venv/bin/python3",
+  "cpu_count":  6,
+  "cpu_count_logical":  12,
+  "gpu":  "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "501809635328",
+      "used":  "268625555456"
+    }
+  },
+  "memory":  {
+    "total":  "7502053376"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce RTX 3050 Laptop GPU",
+      "memoryTotal":  "4294967296",
+      "cudaCores":  2048,
+      "architecture":  "Ampere",
+      "uuid":  "GPU-a0a3e102-a697-7382-3078-a8703980e790"
+    }
+  ],
+  "cudaVersion":  "12.8",
+  "writerId":  "k7cccp191frgu1xoa88lcn1tgq7vplft"
+}

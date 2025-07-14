@@ -1,0 +1,86 @@
+Time : 2025-07-14 17:55:25 || Entered Main Function
+Time : 2025-07-14 17:55:25 || Device = cuda
+Time : 2025-07-14 17:55:25 || Inside get_dataloaders
+Time : 2025-07-14 17:55:25 || train_dataset classes {'cats': 0, 'dogs': 1}
+Time : 2025-07-14 17:55:25 || combined_dataset classes {'cats': 0, 'dogs': 1}
+Time : 2025-07-14 17:55:25 || Finished Transformations
+Time : 2025-07-14 17:55:25 || Finsihed Dataloaders
+Time : 2025-07-14 17:55:25 || Finished Dataloaders
+Time : 2025-07-14 17:55:25 || Finished defining custom_basic_cnn
+Time : 2025-07-14 17:55:25 || Finished defining custom_attention_cnn
+Time : 2025-07-14 17:55:25 || Finished defining Models
+Time : 2025-07-14 17:55:26 || Basic Model started training
+Time : 2025-07-14 17:55:31 || Inside Validation function
+Time : 2025-07-14 17:55:35 || Inside Validation function
+Time : 2025-07-14 17:55:38 || Inside Validation function
+Time : 2025-07-14 17:55:42 || Inside Validation function
+Time : 2025-07-14 17:55:46 || Inside Validation function
+Time : 2025-07-14 17:55:49 || Inside Validation function
+Time : 2025-07-14 17:55:52 || Inside Validation function
+Time : 2025-07-14 17:55:55 || Inside Validation function
+Time : 2025-07-14 17:55:58 || Inside Validation function
+Time : 2025-07-14 17:56:01 || Inside Validation function
+Time : 2025-07-14 17:56:04 || Inside Validation function
+Time : 2025-07-14 17:56:07 || Inside Validation function
+Time : 2025-07-14 17:56:10 || Inside Validation function
+Time : 2025-07-14 17:56:13 || Inside Validation function
+Time : 2025-07-14 17:56:15 || Inside Validation function
+Time : 2025-07-14 17:56:18 || Inside Validation function
+Time : 2025-07-14 17:56:21 || Inside Validation function
+Time : 2025-07-14 17:56:24 || Inside Validation function
+Time : 2025-07-14 17:56:27 || Inside Validation function
+Time : 2025-07-14 17:56:29 || Inside Validation function
+Time : 2025-07-14 17:56:32 || Inside Validation function
+Time : 2025-07-14 17:56:35 || Inside Validation function
+Time : 2025-07-14 17:56:37 || Inside Validation function
+Time : 2025-07-14 17:56:40 || Inside Validation function
+Time : 2025-07-14 17:56:43 || Inside Validation function
+Time : 2025-07-14 17:56:46 || Inside Validation function
+Time : 2025-07-14 17:56:48 || Inside Validation function
+Time : 2025-07-14 17:56:51 || Inside Validation function
+Time : 2025-07-14 17:56:54 || Inside Validation function
+Time : 2025-07-14 17:56:56 || Inside Validation function
+Time : 2025-07-14 17:56:57 || Inside plot_training_metrics
+Time : 2025-07-14 17:56:59 || Basic Model finished training
+Time : 2025-07-14 17:56:59 || Attention Model started training
+Time : 2025-07-14 17:57:03 || Inside Validation function
+Time : 2025-07-14 17:57:06 || Inside Validation function
+Time : 2025-07-14 17:57:08 || Inside Validation function
+Time : 2025-07-14 17:57:11 || Inside Validation function
+Time : 2025-07-14 17:57:14 || Inside Validation function
+Time : 2025-07-14 17:57:17 || Inside Validation function
+Time : 2025-07-14 17:57:19 || Inside Validation function
+Time : 2025-07-14 17:57:22 || Inside Validation function
+Time : 2025-07-14 17:57:25 || Inside Validation function
+Time : 2025-07-14 17:57:28 || Inside Validation function
+Time : 2025-07-14 17:57:31 || Inside Validation function
+Time : 2025-07-14 17:57:33 || Inside Validation function
+Time : 2025-07-14 17:57:36 || Inside Validation function
+Time : 2025-07-14 17:57:39 || Inside Validation function
+Time : 2025-07-14 17:57:42 || Inside Validation function
+Time : 2025-07-14 17:57:44 || Inside Validation function
+Time : 2025-07-14 17:57:47 || Inside Validation function
+Time : 2025-07-14 17:57:50 || Inside Validation function
+Time : 2025-07-14 17:57:53 || Inside Validation function
+Time : 2025-07-14 17:57:56 || Inside Validation function
+Time : 2025-07-14 17:57:59 || Inside Validation function
+Time : 2025-07-14 17:58:01 || Inside Validation function
+Time : 2025-07-14 17:58:04 || Inside Validation function
+Time : 2025-07-14 17:58:07 || Inside Validation function
+Time : 2025-07-14 17:58:10 || Inside Validation function
+Time : 2025-07-14 17:58:13 || Inside Validation function
+Time : 2025-07-14 17:58:15 || Inside Validation function
+Time : 2025-07-14 17:58:18 || Inside Validation function
+Time : 2025-07-14 17:58:21 || Inside Validation function
+Time : 2025-07-14 17:58:24 || Inside Validation function
+Time : 2025-07-14 17:58:24 || Inside plot_training_metrics
+Time : 2025-07-14 17:58:27 || Attention Model finished training
+Time : 2025-07-14 17:58:27 || Inside evaluate_model function
+Time : 2025-07-14 17:58:27 || Inside plot_confusion_matrix
+Time : 2025-07-14 17:58:27 || Basic Model finished evaluating
+Time : 2025-07-14 17:58:27 || Inside evaluate_model function
+Time : 2025-07-14 17:58:27 || Inside plot_confusion_matrix
+Time : 2025-07-14 17:58:27 || Attention Model finished evaluating
+Time : 2025-07-14 17:58:27 || Inside plot_layers function
+Time : 2025-07-14 17:58:28 || Inside plot_layers function
+Time : 2025-07-14 17:58:28 || Finished testing model

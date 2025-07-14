@@ -39,18 +39,8 @@ if os.path.exists(ORIGINAL_PLOT_DIR):
         dst = os.path.join(STATIC_PLOT_DIR, filename)
         if not os.path.exists(dst):
             shutil.copy(src, dst)
-# write code to check if there are files in outputs/checkpoints else run the main file in python to train the models
-CHECKPOINT_DIR = os.path.join(PROJECT_ROOT, "outputs", "checkpoints")
-if not os.path.exists(CHECKPOINT_DIR) or not os.listdir(CHECKPOINT_DIR):
-    print("No checkpoints found. Running training script...")
-    try:
-        
-        subprocess.run([sys.executable, os.path.join(PROJECT_ROOT, "main.py")], check=True)
-        print("Training completed successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error during training: {e}")
-        sys.exit(1)
-
+#ensure checkpoints exist
+os.makedirs(os.path.join(PROJECT_ROOT, "outputs", "checkpoints"), exist_ok=True)
 
 # Load models
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
