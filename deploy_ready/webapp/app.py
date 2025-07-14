@@ -33,7 +33,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(GRADCAM_FOLDER, exist_ok=True)
 
 # Automatically copy plot images to static so HTML can access them
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 ORIGINAL_PLOT_DIR = os.path.join(PROJECT_ROOT, "outputs", "plots")
 STATIC_PLOT_DIR = os.path.join(BASE_DIR, "static", "outputs", "plots")
 os.makedirs(STATIC_PLOT_DIR, exist_ok=True)
